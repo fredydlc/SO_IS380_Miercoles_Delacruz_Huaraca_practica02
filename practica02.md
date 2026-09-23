@@ -40,3 +40,8 @@ La lógica operativa e interna se encuentra codificada dentro de `kernel/sysfile
 El rastreo localiza la definición simbólica del identificador mediante el macro `#define SYS_getpid 11`. El entero 11 actúa como el token contractual inalterable entre el modo usuario y el modo supervisor para realizar la solicitud de identidad del proceso.
 
 ![Rastreo de la interfaz de SYS_getpid](imgs/4_getpid_interfaz.png)
+
+#### 2. Entrada en la Tabla de Despacho (`kernel/syscall.c`)
+Dentro de la tabla de vectores de despacho `syscalls`, la constante se encuentra indexada explícitamente en la línea `[SYS_getpid] sys_getpid`. El kernel utiliza esta posición fija (11) para resolver la llamada sin necesidad de utilizar estructuras condicionales lentas.
+
+![Rastreo de la tabla de despacho para SYS_getpid](imgs/5_getpid_despacho.png)
