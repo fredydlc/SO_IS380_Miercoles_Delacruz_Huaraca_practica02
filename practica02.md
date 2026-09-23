@@ -66,3 +66,8 @@ El viaje de una llamada al sistema a través de las capas de hardware y software
 2. **Fase de Transición de Privilegios (`ecall`):** El programa ejecuta la instrucción de hardware `ecall`. En ese nanosegundo, el procesador RISC-V detiene la ejecución del código de usuario, eleva el nivel de privilegios al modo Supervisor (Modo Kernel), almacena la dirección de retorno en el registro especial `sepc`, y transfiere el flujo a la rutina común de gestión de trampas e interrupciones del kernel llamada `usertrap()` en `kernel/trap.c`.
 
 ![Localizacion de usertrap en trap.c](imgs/7_usertrap.png)
+
+3. **Fase de Captura del Control:** Dentro de `usertrap()`, el sistema operativo interroga al registro físico `scause` mediante la instrucción condicional `r_scause() == 8`. El valor numérico `8` es la firma de hardware exclusiva de RISC-V que confirma que la trampa fue provocada por una instrucción `ecall` de usuario e invoca a la función genérica `syscall()`.
+4. **Fase de Despacho y Extracción (`kernel/syscall.c`):** La función `syscall()` no lee los registros directamente de la CPU, sino que extrae el identificador numérico consultando la estructura `p->trapframe->a7`. Dado que en `a7` viajaba el número 11, se ejecuta la celda `syscalls[11]()`, desencadenando la ejecución de `sys_getpid()` en `kernel/sysproc.c`.
+
+![Rastreo de la lectura del registro a7](imgs/8_registro_a7.png)
