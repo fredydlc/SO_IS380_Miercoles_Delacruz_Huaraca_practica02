@@ -22,3 +22,14 @@ La línea exacta mapea la relación `[SYS_read] sys_read`,
  asociando el identificador 5 con la función encargada de su despacho.
 
 ![Rastreo de la tabla de despacho para SYS_read](imgs/2_read_despacho.png)
+
+
+#### 3. Implementación de la Función (`kernel/sysfile.c`)
+La lógica operativa e interna se encuentra codificada dentro de `kernel/sysfile.c` bajo la firma `uint64 sys_read(void)`. Esta rutina se encarga de validar los descriptores de archivos del proceso, interactuar con los buffers del sistema de almacenamiento y transferir los bloques de datos leídos hacia el espacio de memoria asignado al usuario.
+
+![Rastreo de la implementación de sys_read](imgs/3_read_implementacion.png)
+
+*   **Párrafo de Conexión Integral:** 
+    Cuando un programa de usuario invoca la función estándar `read()`, la arquitectura de hardware y las bibliotecas cargan el identificador numérico `SYS_read` (5) como parámetro de la interfaz. Al cruzar la frontera del núcleo mediante el mecanismo de excepciones, la función de despacho utiliza este índice 5 para consultar de forma atómica el arreglo vectorizado `syscalls`. Este mapeo redirige de inmediato el flujo del procesador hacia la dirección exacta de memoria donde reside la función de aislamiento `sys_read()`, resolviendo la solicitud dentro del espacio protegido del kernel de manera monolítica.
+
+---
