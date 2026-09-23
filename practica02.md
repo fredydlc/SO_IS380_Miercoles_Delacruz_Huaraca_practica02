@@ -91,3 +91,20 @@ las variables de la aplicación de usuario se destruirían por completo de forma
 haciendo imposible el retorno ordenado del proceso a su ejecución nativa.
 
 ---
+## 3. Preguntas de reflexión
+
+1. **¿La implementación de cada una vive en `sysproc.c` o en `sysfile.c`? ¿A qué criterio responde esa separación?**
+   * `sys_getpid()` vive en `sysproc.c` mientras que `sys_read()` vive en `sysfile.c`. Esta separación responde al
+ principio de diseño de **cohesión y modularidad**. Las llamadas que gestionan ciclos de vida, identificadores y asignación de memoria de los procesos van en `sysproc.c`, 
+mientras que toda llamada destinada a manipular descriptores de archivos, pipes o bloques de almacenamiento se agrupa en `sysfile.c`.
+
+2. **¿Por qué es necesario que el número se transmita mediante un registro del procesador (`a7`) y no mediante una variable compartida en memoria?**
+   * Por motivos estrictos de **seguridad y aislamiento**. En el momento previo a ejecutar `ecall`, el espacio de memoria del usuario y el del 
+kernel están completamente separados por el hardware de paginación. Un programa de usuario no tiene acceso físico ni permisos para escribir en variables del espacio 
+de memoria del kernel. Los registros físicos del procesador (`a7`) son el único medio neutral y ultrarrápido accesible por ambos modos durante la transición de privilegios.
+
+3. **¿Cómo evita el kernel que se mezclen los registros o el estado guardado si dos procesos realizan una llamada casi en el mismo instante?**
+   * El kernel lo evita debido a que **cada proceso posee su propio trapframe independiente y su propia pila de ejecución en el espacio del kernel (kernel stack)**. Aunque 
+compartan la misma CPU de manera intercalada o corran en núcleos distintos, el hardware de xv6 cambia los punteros de memoria hacia las estructuras específicas del proceso que 
+toma el control, garantizando que el guardado y restauración de estados sea atómico y completamente aislado.
+
