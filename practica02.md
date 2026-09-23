@@ -33,3 +33,10 @@ La lógica operativa e interna se encuentra codificada dentro de `kernel/sysfile
     Cuando un programa de usuario invoca la función estándar `read()`, la arquitectura de hardware y las bibliotecas cargan el identificador numérico `SYS_read` (5) como parámetro de la interfaz. Al cruzar la frontera del núcleo mediante el mecanismo de excepciones, la función de despacho utiliza este índice 5 para consultar de forma atómica el arreglo vectorizado `syscalls`. Este mapeo redirige de inmediato el flujo del procesador hacia la dirección exacta de memoria donde reside la función de aislamiento `sys_read()`, resolviendo la solicitud dentro del espacio protegido del kernel de manera monolítica.
 
 ---
+
+### B. RASTREO COMPLETO DE LA LLAMADA AL SISTEMA: `getpid`
+
+#### 1. Interfaz en el Kernel (`kernel/syscall.h`)
+El rastreo localiza la definición simbólica del identificador mediante el macro `#define SYS_getpid 11`. El entero 11 actúa como el token contractual inalterable entre el modo usuario y el modo supervisor para realizar la solicitud de identidad del proceso.
+
+![Rastreo de la interfaz de SYS_getpid](imgs/4_getpid_interfaz.png)
