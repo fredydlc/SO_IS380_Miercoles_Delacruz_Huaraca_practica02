@@ -45,3 +45,14 @@ El rastreo localiza la definición simbólica del identificador mediante el macr
 Dentro de la tabla de vectores de despacho `syscalls`, la constante se encuentra indexada explícitamente en la línea `[SYS_getpid] sys_getpid`. El kernel utiliza esta posición fija (11) para resolver la llamada sin necesidad de utilizar estructuras condicionales lentas.
 
 ![Rastreo de la tabla de despacho para SYS_getpid](imgs/5_getpid_despacho.png)
+
+
+#### 3. Implementación de la Función (`kernel/sysproc.c`)
+La implementación real se halla en el archivo de gestión de procesos `kernel/sysproc.c` bajo la firma `uint64 sys_getpid(void)`. Su alcance operativo consiste en interrogar de manera segura el contexto del proceso que está en ejecución en ese instante mediante `myproc()` y retornar el valor primitivo almacenado en el campo interno `p->pid`.
+
+![Rastreo de la implementación de sys_getpid](imgs/6_getpid_implementacion.png)
+
+*   **Párrafo de Conexión Integral:** 
+    El número contractual `SYS_getpid` (11) viaja desde el entorno aislado de la aplicación hacia el subsistema de despacho del núcleo. Al ser recibido, la tabla indexada `syscalls` toma el índice 11 como un puntero directo de salto. Este direccionamiento transfiere de inmediato el control de ejecución a la rutina especializada `sys_getpid()` en `kernel/sysproc.c`, la cual tiene los privilegios de hardware requeridos para inspeccionar las estructuras protegidas de la tabla de procesos del sistema operativo y devolver el identificador PID al espacio del usuario de manera segura.
+
+---
