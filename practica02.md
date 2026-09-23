@@ -56,3 +56,13 @@ La implementación real se halla en el archivo de gestión de procesos `kernel/s
     El número contractual `SYS_getpid` (11) viaja desde el entorno aislado de la aplicación hacia el subsistema de despacho del núcleo. Al ser recibido, la tabla indexada `syscalls` toma el índice 11 como un puntero directo de salto. Este direccionamiento transfiere de inmediato el control de ejecución a la rutina especializada `sys_getpid()` en `kernel/sysproc.c`, la cual tiene los privilegios de hardware requeridos para inspeccionar las estructuras protegidas de la tabla de procesos del sistema operativo y devolver el identificador PID al espacio del usuario de manera segura.
 
 ---
+
+## 2. Investigación: El mecanismo de trampa (trap)
+
+### Explicación detallada del camino de ejecución (Caso de estudio: `getpid`)
+El viaje de una llamada al sistema a través de las capas de hardware y software se ejecuta bajo un estricto protocolo de aislamiento:
+
+1. **Fase de Preparación (Modo Usuario):** Cuando el programa invoca la función del entorno de usuario `getpid()`, la biblioteca de C carga el número identificador único `SYS_getpid` (11) en el registro físico de la CPU denominado `a7`.
+2. **Fase de Transición de Privilegios (`ecall`):** El programa ejecuta la instrucción de hardware `ecall`. En ese nanosegundo, el procesador RISC-V detiene la ejecución del código de usuario, eleva el nivel de privilegios al modo Supervisor (Modo Kernel), almacena la dirección de retorno en el registro especial `sepc`, y transfiere el flujo a la rutina común de gestión de trampas e interrupciones del kernel llamada `usertrap()` en `kernel/trap.c`.
+
+![Localizacion de usertrap en trap.c](imgs/7_usertrap.png)
