@@ -71,3 +71,23 @@ El viaje de una llamada al sistema a través de las capas de hardware y software
 4. **Fase de Despacho y Extracción (`kernel/syscall.c`):** La función `syscall()` no lee los registros directamente de la CPU, sino que extrae el identificador numérico consultando la estructura `p->trapframe->a7`. Dado que en `a7` viajaba el número 11, se ejecuta la celda `syscalls[11]()`, desencadenando la ejecución de `sys_getpid()` en `kernel/sysproc.c`.
 
 ![Rastreo de la lectura del registro a7](imgs/8_registro_a7.png)
+
+### Investigación sobre la estructura `trapframe`
+*   **¿Qué es el `trapframe`?** 
+Es una estructura de datos de memoria crítica asignada de forma individual 
+a cada proceso activo del sistema operativo dentro del espacio físico de páginas administrado por el núcleo.
+Su función primordial es actuar como un bloque de guardado de estado completo.
+*   **¿Qué contiene exactamente?** 
+Contiene copias exactas y secuenciales de la totalidad de los registros de propósito general y registros 
+de control de la arquitectura del procesador RISC-V en el instante preciso antes de abandonar el espacio 
+de usuario (parámetros de funciones `a0-a7`, puntero de pila `sp`, contador de programa `epc`, etc.).
+*   **¿Por qué es estrictamente necesario guardarlo antes de entrar al kernel?** 
+El procesador físico posee un número finito de registros de hardware. 
+Cuando una llamada al sistema salta al modo privilegiado, el código del kernel de xv6 necesita obligatoriamente 
+utilizar esos mismos registros físicos para llevar a cabo sus propias operaciones del 
+sistema (como buscar datos en discos o recorrer listas). Si el kernel no "congelara" el estado del usuario 
+en el `trapframe` antes de sobreescribir los registros físicos de la CPU, la información, el progreso y 
+las variables de la aplicación de usuario se destruirían por completo de forma irreversible, 
+haciendo imposible el retorno ordenado del proceso a su ejecución nativa.
+
+---
